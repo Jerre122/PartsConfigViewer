@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,8 +14,22 @@ namespace Viewer
 {
     public partial class ViewerForm : Form
     {
-        private string outputLogFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\KSP_x64_Data\output_log.txt";
-        private string configCacheFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\GameData\ModuleManager.ConfigCache";
+        private const string URLCONFIG = "UrlConfig";
+
+        //private string outputLogFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\KSP_x64_Data\output_log.txt";
+        //private string configCacheFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\GameData\ModuleManager.ConfigCache";            
+
+        private string outputLogFile = @"G:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - Non Steam\KSP_x64_Data\output_log.txt";
+        private string configCacheFile = @"G:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - Non Steam\GameData\ModuleManager.ConfigCache";
+
+        /*
+            Celestial body (CELESTIAL_BODY)
+            Contract
+                -Definition (CONTRACT_DEFINITION)
+                -Type (CONTRACT_TYPE)
+        */
+
+        private ConfigNode topNode;
 
         public ViewerForm()
         {
@@ -35,8 +51,149 @@ namespace Viewer
 
         private void loadFiles()
         {
-            //TODO verify existence of files before loading
-            File out
+            bool failed = false;
+            if(outputLogFile == null || !File.Exists(outputLogFile))
+            {
+                Console.WriteLine("Outputlog file (" + outputLogFile + ") does not exist.");
+                failed |= true;
+            }
+
+            if (configCacheFile == null || !File.Exists(configCacheFile))
+            {
+                Console.WriteLine("ConfigCache file (" + configCacheFile + ") does not exist.");
+                failed |= true;
+            }
+
+            if (failed)
+                return;
+        
+            topNode = ConfigNode.Load(configCacheFile);            
+            Console.WriteLine(topNode.CountNodes + " nodes loaded.");
+            if((topNode?.CountNodes ?? 0) > 0)
+            {
+                populateConfigTree(topNode);
+            }
+            return;
+        }        
+
+        private void populateConfigTree(ConfigNode topNode, string searchWord = null)
+        {
+            //TODO root has attributes
+
+            configTree.Nodes.Clear();
+            configTree.BeginUpdate();
+            ConfigTreeNode root = new ConfigTreeNode(topNode);
+            foreach (ConfigNode node in topNode.nodes.GetNodes())
+            {
+                ConfigTreeNode treeNode = getChildren(node, searchWord);
+                if(treeNode != null)
+                {
+                    root.Nodes.Add(treeNode);
+                    //configTree.Nodes.Add(treeNode);
+                }                    
+            }
+            configTree.Nodes.Add(root);
+            root.Expand();
+            configTree.EndUpdate();
+        }
+
+        private ConfigTreeNode makeTreeNode(ConfigNode node)
+        {            
+            if(node.name.Equals(URLCONFIG, StringComparison.InvariantCultureIgnoreCase) && node.HasValue("name")){
+                return new ConfigTreeNode(node, node.GetValue("name"));
+            }
+
+            return new ConfigTreeNode(node);
+        }
+
+        private ConfigTreeNode getChildren(ConfigNode node, string searchWord)
+        {
+            //Check attributes      
+            bool wordFound = false;      
+            ConfigTreeNode treeNode = null;
+            foreach (ConfigNode.Value value in node.values)
+            {
+                if(searchWord == null || CultureInfo.CurrentCulture.CompareInfo.IndexOf(value.value, searchWord, CompareOptions.IgnoreCase) >= 0)
+                {
+                    //match found
+                    wordFound = true;
+                    treeNode = makeTreeNode(node);
+                    break;
+                }
+            }
+                        
+            if(node.CountNodes > 0)            
+            {
+                foreach (ConfigNode childNode in node.nodes.GetNodes())
+                {
+                    ConfigTreeNode childTreeNode = getChildren(childNode, wordFound ? null : searchWord);
+                    if(childTreeNode != null)
+                    {
+                        //Child contains searchWord
+                        if (treeNode == null)
+                            treeNode = makeTreeNode(node);
+                        treeNode.Nodes.Add(childTreeNode);
+                    }
+                }
+            }
+            return treeNode;
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void searchTextBox_TextChanged(object sender, EventArgs e)
+        {
+            rebuildConfigTree();
+        }
+
+        private void rebuildConfigTree()
+        {
+            string searchWord = searchTextBox.Text.Trim();
+            populateConfigTree(topNode, searchWord.Length > 0 ? searchWord : null);
+        }
+
+        private void configTree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if(e.Action == TreeViewAction.ByMouse || e.Action == TreeViewAction.ByKeyboard)
+            {
+                ConfigTreeNode selected = (ConfigTreeNode)e.Node;
+                ConfigNode configNode = selected.Data;
+                if(configNode.name == URLCONFIG)
+                {
+                    configView.SetData(configNode);
+                }
+            }
+        }
+
+        private void filterParts_Click(object sender, EventArgs e)
+        {
+            filterParts.Checked = !filterParts.Checked;
+            rebuildConfigTree();
+        }
+
+        private void filterExperiments_Click(object sender, EventArgs e)
+        {
+            filterExperiments.Checked = !filterExperiments.Checked;
+            rebuildConfigTree();
+        }
+
+        private void filterOther_Click(object sender, EventArgs e)
+        {
+            filterOther.Checked = !filterOther.Checked;
+            rebuildConfigTree();
+        }
+
+        private void checkAll_click(object sender, EventArgs e)
+        {
+            bool update = filterParts.Checked || filterExperiments.Checked || filterOther.Checked;
+            filterParts.Checked = true;
+            filterExperiments.Checked = true;
+            filterOther.Checked = true;
+            if (update)
+                rebuildConfigTree();
         }
     }
 }
