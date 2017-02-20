@@ -15,12 +15,14 @@ namespace Viewer
     public partial class ViewerForm : Form
     {
         private const string URLCONFIG = "UrlConfig";
+        private TypeFilter[] filters;
+        private bool ignoreFilterUpdate = false;
 
-        //private string outputLogFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\KSP_x64_Data\output_log.txt";
-        //private string configCacheFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\GameData\ModuleManager.ConfigCache";            
+        private string outputLogFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\KSP_x64_Data\output_log.txt";
+        private string configCacheFile = @"D:\Program Files (x86)\Kerbal Space Program - Development\GameData\ModuleManager.ConfigCache";
 
-        private string outputLogFile = @"G:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - Non Steam\KSP_x64_Data\output_log.txt";
-        private string configCacheFile = @"G:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - Non Steam\GameData\ModuleManager.ConfigCache";
+        //private string outputLogFile = @"G:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - Non Steam\KSP_x64_Data\output_log.txt";
+        //private string configCacheFile = @"G:\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program - Non Steam\GameData\ModuleManager.ConfigCache";
 
         /*
             Celestial body (CELESTIAL_BODY)
@@ -34,6 +36,7 @@ namespace Viewer
         public ViewerForm()
         {
             InitializeComponent();
+            loadFilters();
             loadFiles();
         }
 
@@ -47,6 +50,57 @@ namespace Viewer
                 configCacheFile = configForm.ConfigCacheFile;
                 outputLogFile = configForm.OutputLogFile;
             } 
+        }
+
+        private void loadFilters()
+        {
+            //TODO load from file;
+            ignoreFilterUpdate = true;
+            filters = new TypeFilter[]{
+                new TypeFilter("Resources", new string[] { "RESOURCE_DEFINITION", "BIOME_RESOURCE" }),
+                new TypeFilter("Parts", new string[] {"PART"}),
+                new TypeFilter("Contact", new string[] {"CONTRACT_TYPE", "CONTRACT_GROUP", "AGENT"}),
+                new TypeFilter("Other", null)
+            };
+
+            for(int i = 0; i < filters.Length; i++)
+            {
+                TypeFilter filter = filters[i];
+                filter.SetActive(true);
+                int k = i;
+                ToolStripButton toolStripButton = new ToolStripButton(filter.Name, null, (sender, e) => clickFilter(sender, e, k));
+                toolStripButton.Checked = true;
+                filterTreeToolStripMenuItem.DropDownItems.Add(toolStripButton);
+
+            }
+
+            filterTreeToolStripMenuItem.DropDownItems.Add(new ToolStripButton("Check All", null, (sender, e) => checkAll(sender, e)));
+            ignoreFilterUpdate = false;
+        }
+
+        private void clickFilter(object sender, EventArgs e, int index)
+        {
+            ToolStripButton filterButton = (ToolStripButton)filterTreeToolStripMenuItem.DropDownItems[index];
+            filterButton.Checked = filters[index].Toggle();
+            if(!ignoreFilterUpdate)
+                rebuildConfigTree();
+        }
+
+        private void checkAll(object sender, EventArgs e)
+        {
+            ignoreFilterUpdate = true;
+            bool update = false;
+            for (int i = 0; i < filters.Length; i++)
+            {
+                if (filters[i].IsActive())
+                {
+                    update = true;
+                    ((ToolStripButton)filterTreeToolStripMenuItem.DropDownItems[i]).Checked = true;
+                }
+            }
+            ignoreFilterUpdate = false;
+            if(update)
+                rebuildConfigTree();
         }
 
         private void loadFiles()
@@ -166,34 +220,6 @@ namespace Viewer
                     configView.SetData(configNode);
                 }
             }
-        }
-
-        private void filterParts_Click(object sender, EventArgs e)
-        {
-            filterParts.Checked = !filterParts.Checked;
-            rebuildConfigTree();
-        }
-
-        private void filterExperiments_Click(object sender, EventArgs e)
-        {
-            filterExperiments.Checked = !filterExperiments.Checked;
-            rebuildConfigTree();
-        }
-
-        private void filterOther_Click(object sender, EventArgs e)
-        {
-            filterOther.Checked = !filterOther.Checked;
-            rebuildConfigTree();
-        }
-
-        private void checkAll_click(object sender, EventArgs e)
-        {
-            bool update = filterParts.Checked || filterExperiments.Checked || filterOther.Checked;
-            filterParts.Checked = true;
-            filterExperiments.Checked = true;
-            filterOther.Checked = true;
-            if (update)
-                rebuildConfigTree();
         }
     }
 }

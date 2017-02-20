@@ -33,10 +33,6 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.filterTreeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.filterParts = new System.Windows.Forms.ToolStripMenuItem();
-            this.filterExperiments = new System.Windows.Forms.ToolStripMenuItem();
-            this.filterOther = new System.Windows.Forms.ToolStripMenuItem();
-            this.checkAll = new System.Windows.Forms.ToolStripMenuItem();
             this.configurationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configTree = new System.Windows.Forms.TreeView();
             this.splitContainer = new System.Windows.Forms.SplitContainer();
@@ -89,48 +85,9 @@
             // 
             // filterTreeToolStripMenuItem
             // 
-            this.filterTreeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.filterParts,
-            this.filterExperiments,
-            this.filterOther,
-            this.checkAll});
             this.filterTreeToolStripMenuItem.Name = "filterTreeToolStripMenuItem";
             this.filterTreeToolStripMenuItem.Size = new System.Drawing.Size(71, 20);
             this.filterTreeToolStripMenuItem.Text = "Filter type";
-            // 
-            // filterParts
-            // 
-            this.filterParts.Checked = true;
-            this.filterParts.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.filterParts.Name = "filterParts";
-            this.filterParts.Size = new System.Drawing.Size(152, 22);
-            this.filterParts.Text = "Parts";
-            this.filterParts.Click += new System.EventHandler(this.filterParts_Click);
-            // 
-            // filterExperiments
-            // 
-            this.filterExperiments.Checked = true;
-            this.filterExperiments.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.filterExperiments.Name = "filterExperiments";
-            this.filterExperiments.Size = new System.Drawing.Size(152, 22);
-            this.filterExperiments.Text = "Experiment";
-            this.filterExperiments.Click += new System.EventHandler(this.filterExperiments_Click);
-            // 
-            // filterOther
-            // 
-            this.filterOther.Checked = true;
-            this.filterOther.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.filterOther.Name = "filterOther";
-            this.filterOther.Size = new System.Drawing.Size(152, 22);
-            this.filterOther.Text = "Other";
-            this.filterOther.Click += new System.EventHandler(this.filterOther_Click);
-            // 
-            // checkAll
-            // 
-            this.checkAll.Name = "checkAll";
-            this.checkAll.Size = new System.Drawing.Size(152, 22);
-            this.checkAll.Text = "Check all";
-            this.checkAll.Click += new System.EventHandler(this.checkAll_click);
             // 
             // configurationsToolStripMenuItem
             // 
@@ -234,12 +191,8 @@
         private System.Windows.Forms.TextBox searchTextBox;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ToolStripMenuItem filterTreeToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem filterParts;
-        private System.Windows.Forms.ToolStripMenuItem filterOther;
-        private System.Windows.Forms.ToolStripMenuItem checkAll;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private ConfigView configView;
-        private System.Windows.Forms.ToolStripMenuItem filterExperiments;
     }
 }
 
