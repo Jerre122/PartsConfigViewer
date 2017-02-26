@@ -87,7 +87,7 @@
             // 
             this.filterTreeToolStripMenuItem.Name = "filterTreeToolStripMenuItem";
             this.filterTreeToolStripMenuItem.Size = new System.Drawing.Size(71, 20);
-            this.filterTreeToolStripMenuItem.Text = "Filter type";
+            this.filterTreeToolStripMenuItem.Text = "Filter type";            
             // 
             // configurationsToolStripMenuItem
             // 
