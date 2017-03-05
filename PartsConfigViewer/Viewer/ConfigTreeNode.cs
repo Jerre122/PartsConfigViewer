@@ -9,13 +9,8 @@ namespace Viewer
     class ConfigTreeNode : TreeNode
     {
         private ConfigNode data;
-
-        public ConfigTreeNode(ConfigNode data) : base(data.name)
-        {
-            this.data = data;
-        }
-
-        public ConfigTreeNode(ConfigNode data, string name) : base(name)
+        
+        public ConfigTreeNode(ConfigNode data, string name = null) : base(name ?? data.name)
         {
             this.data = data;
         }

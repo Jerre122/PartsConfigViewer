@@ -57,13 +57,22 @@ namespace Viewer
         {
             //TODO load from file;
             ignoreFilterUpdate = true;
-            
+
 
             TypeFilter[] tmpFilters = new TypeFilter[]{ //TODO load from external file
-                new TypeFilter("Resources", new string[] { "RESOURCE_DEFINITION", "BIOME_RESOURCE" }),
+                new TypeFilter("Agents", new string[] {"AGENT"}),
+                new TypeFilter("Character", new string[] {"EXPERIENCE_TRAITS", "STORY_DEF"}),
+                new TypeFilter("Resources", new string[] { "RESOURCE_DEFINITION", "BIOME_RESOURCE", "PLANETARY_RESOURCE", "GLOBAL_RESOURCE"}),
+                new TypeFilter("Scansat", new string[] {"SCANSAT_SENSOR", "SCAN_COLOR_CONFIG", "SCAN_COLOR_LOCALISATION" }),
                 new TypeFilter("Parts", new string[] {"PART"}),
-                new TypeFilter("Contact", new string[] {"CONTRACT_TYPE", "CONTRACT_GROUP", "AGENT"}),
+                new TypeFilter("Interior", new string[] {"INTERNAL"}),
+                new TypeFilter("Contract", new string[] {"CONTRACT_TYPE", "CONTRACT_GROUP", "CONTRACT_DEFINITION", "DMCONTRACTS", "CONTRACTS"}),
+                new TypeFilter("Experiments", new string[] {"CC_EXPERIMENT_DEFINITIONS", "EXPERIMENT_DEFINITION", "SCIENCECHECKLIST"}),
                 new TypeFilter("Prop", new string[] {"PROP"}),
+                new TypeFilter("Celestial", new string[] {"CELESTIAL_BODY", "CELESTIALBODYCOLOR", "PLANETSHINECELESTIALBODY", "PLANETSHINE"}),
+                new TypeFilter("Strategies", new string[] {"STRATEGY", "STRATEGY_DEPARTMENT"}),
+                new TypeFilter("Tech tree", new string[] {"TECHTREE" }),
+                new TypeFilter("Tutorial", new string[] {"TUTORIAL" }),
                 new TypeFilter("Other", null)
             };
 
@@ -77,17 +86,18 @@ namespace Viewer
                 TypeFilter filter = filters.GetFilter(i);
                 filter.SetActive(true);
                 int k = i;
-                ToolStripMenuItem toolStripButton = new ToolStripMenuItem(filter.Name, null, (sender, e) => clickFilter(sender, e, k));
+                ToolStripMenuItem toolStripButton = new ToolStripMenuItem(filter.Name, null, (sender, e) => clickFilter(k));
                 toolStripButton.Checked = true;
                 filterTreeToolStripMenuItem.DropDownItems.Add(toolStripButton);
 
             }
 
-            filterTreeToolStripMenuItem.DropDownItems.Add(new ToolStripMenuItem("Check All", null, (sender, e) => checkAll(sender, e)));
+            filterTreeToolStripMenuItem.DropDownItems.Add(new ToolStripMenuItem("Check All", null, (sender, e) => checkAll(true)));
+            filterTreeToolStripMenuItem.DropDownItems.Add(new ToolStripMenuItem("Uncheck All", null, (sender, e) => checkAll(false)));
             ignoreFilterUpdate = false;
         }
 
-        private void clickFilter(object sender, EventArgs e, int index)
+        private void clickFilter(int index)
         {
             ToolStripMenuItem filterButton = (ToolStripMenuItem)filterTreeToolStripMenuItem.DropDownItems[index];
             filterButton.Checked = filters.GetFilter(index)?.Toggle() ?? false;
@@ -95,20 +105,22 @@ namespace Viewer
                 rebuildTypeFilteredConfigTree();
         }
 
-        private void checkAll(object sender, EventArgs e)
+        private void checkAll(bool check)
         {
             ignoreFilterUpdate = true;
             bool update = false;
             for (int i = 0; i < filters.Count; i++)
             {
-                if ((!filters.GetFilter(i)?.IsActive()) ?? false)
+                TypeFilter filter = filters.GetFilter(i);
+                if (filter != null && (filter.IsActive() != check))
                 {
                     update = true;
-                    ((ToolStripMenuItem)filterTreeToolStripMenuItem.DropDownItems[i]).Checked = true;
+                    clickFilter(i);
                 }
             }
             ignoreFilterUpdate = false;
-            filterTreeToolStripMenuItem.DropDown.Close();
+            if(check)
+                filterTreeToolStripMenuItem.DropDown.Close();
             if (update)
                 rebuildTypeFilteredConfigTree();
         }
@@ -189,9 +201,31 @@ namespace Viewer
         }        
 
         private ConfigTreeNode makeTreeNode(ConfigNode node)
-        {            
-            if(node.name.Equals(URLCONFIG, StringComparison.InvariantCultureIgnoreCase) && node.HasValue("name")){
-                return new ConfigTreeNode(node, node.GetValue("name"));
+        {
+            if(node.name.Equals(URLCONFIG, StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (!node.HasValue("name"))
+                    Console.WriteLine("NoName");
+                if (node.nodes.Count != 1)
+                    Console.WriteLine("Count not 1");
+                if(node.values.Count != 4)
+                    Console.WriteLine("Values not 4");
+            }
+            if (node.name.Equals(URLCONFIG, StringComparison.InvariantCultureIgnoreCase)){
+
+                string name = node.HasValue("name") ? node.GetValue("name") : null;
+
+                if(node == null)
+                    Console.WriteLine("URLCONFIG found without a name.");
+                if (node.CountValues != 4)
+                    Console.WriteLine("URLCONFIG confignode (" + node ?? "<no name found>" + ") should contain 4 values.");
+                if (node.CountNodes != 1)
+                    Console.WriteLine("URLCONFIG confignode (" + node ?? "<no name found>" + ") should contain 1 node.");
+
+                if (name != null)
+                    return new ConfigTreeNode(node, name);
+                
+                    
             }
 
             return new ConfigTreeNode(node);

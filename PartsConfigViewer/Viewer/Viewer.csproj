@@ -81,6 +81,7 @@
     <Compile Include="ConfigView.Designer.cs">
       <DependentUpon>ConfigView.cs</DependentUpon>
     </Compile>
+    <Compile Include="outputLog\OutputLog.cs" />
     <Compile Include="TypeFilter.cs" />
     <Compile Include="TypeFilters.cs" />
     <Compile Include="ViewerForm.cs">

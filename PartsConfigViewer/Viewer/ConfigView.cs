@@ -25,7 +25,12 @@ namespace Viewer
             if (lastParent != parentNode) //TODO equals method
             {
                 configTreeView.Nodes.Clear();
-                ensureVisibleTreeNode = addNodes(configTreeView.Nodes, null, parentNode, ensureVisible);
+                //TODO ensure 4 values and 1 node
+                nameTxtBox.Text = parentNode.GetValue("name") ?? "";
+                typeTxtBox.Text = parentNode.GetValue("type") ?? "";
+                parentUrlTxtBox.Text = parentNode.GetValue("parentUrl") ?? "";
+                urlTxtBox.Text = parentNode.GetValue("url") ?? "";
+                ensureVisibleTreeNode = addNodes(configTreeView.Nodes, null, parentNode.nodes[0], ensureVisible);
                 lastParent = parentNode;
                 configTreeView.ExpandAll();                
             } else
@@ -40,6 +45,9 @@ namespace Viewer
                 configTreeView.SelectedNode = ensureVisibleTreeNode;
                 //ensureVisibleTreeNode.EnsureVisible();
                 //TODO shift focus                
+            } else
+            {
+                configTreeView.Nodes[0]?.EnsureVisible();
             }
 
 
@@ -60,7 +68,7 @@ namespace Viewer
             TreeNode ensureVisibleTreeNode = null;
             if (configNode == ensureVisible)
                 ensureVisibleTreeNode = parentTreeNode;
-
+                        
             foreach (ConfigNode.Value val in configNode.values)
             {
                 string valueText = val.name + ": " + val.value;
